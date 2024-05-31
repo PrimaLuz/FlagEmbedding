@@ -2,12 +2,17 @@ import torch
 import faiss
 import numpy as np
 from typing import List, Mapping, Optional, Union
-from tqdm import tqdm
 from accelerate import Accelerator
+from dataclasses import dataclass
 from collections import defaultdict
-from transformers.utils import logging
 from transformers import AutoTokenizer, AutoModel
+from transformers.utils import logging
+from transformers.modeling_utils import PreTrainedModel
+from transformers.tokenization_utils import PreTrainedTokenizer
 from torch.utils.data import DataLoader
+from semantic_text_splitter import TextSplitter
+
+from src import apply_chat_template
 
 logger = logging.get_logger(__name__)
 
@@ -239,6 +244,7 @@ class DenseRetriever:
         scores, indices = self._index.search(embeddings, hits)
         return scores, indices
     
+
 
 class FaissIndex:
     def __init__(self, device) -> None:

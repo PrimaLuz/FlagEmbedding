@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from transformers.tokenization_utils import PreTrainedTokenizer
 from datetime import datetime
 from collections import OrderedDict
-from typing import Optional, List, Dict, Any, Mapping, Iterable
+from typing import Optional, List, Dict, Any, Mapping, Iterable, Union
 
 logger = logging.getLogger(__name__)
 
@@ -71,18 +71,34 @@ def save_json(obj, path:str):
     if not os.path.exists(path):
         makedirs(path)
     with open(path, "w") as f:
-        return json.dump(obj, f, ensure_ascii=False)
+        return json.dump(obj, f)
 
 def load_json(path, lines=False):
     if lines:
         output = []
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             for line in f:
                 output.append(json.loads(line))
         return output
     else:
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
+
+def format_numel_str(numel: int) -> str:
+    T = 1e12
+    B = 1e9
+    M = 1e6
+    K = 1e3
+    if numel >= T:
+        return f"{numel / T:.2f} T"
+    if numel >= B:
+        return f"{numel / B:.2f} B"
+    elif numel >= M:
+        return f"{numel / M:.2f} M"
+    elif numel >= K:
+        return f"{numel / K:.2f} K"
+    else:
+        return f"{numel}"
 
 def batched_iter(iterable: Iterable, max_batch_size: int):
     """ Batches an iterable into lists of given maximum size, yielding them one by one. """
@@ -219,9 +235,11 @@ def add_eos(inputs: Mapping, eos_token_id: int):
             inputs[k] = v
     return inputs
 
-def remove_eos(inputs: Mapping, eos_token_id: int):
+def remove_eos(inputs: Mapping, eos_token_ids: Union[List,int]):
+    if isinstance(eos_token_ids, int):
+        eos_token_ids = [eos_token_ids]
     input_ids = inputs["input_ids"]
-    eos_idx = [i for i, x in enumerate(input_ids) if x == eos_token_id][0]
+    eos_idx = [i for i, x in enumerate(input_ids) if x in eos_token_ids][0]
     for k, v in inputs.items():
         inputs[k].pop(eos_idx)
     return inputs

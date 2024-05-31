@@ -19,7 +19,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_name_or_path', default="BAAI/bge-large-zh", type=str)
     parser.add_argument('--task_type', default=None, type=str)
-    parser.add_argument('--add_instruction', action='store_true', help="whether to add instruction for query")
+    parser.add_argument('--add_instruction', default=False, action='store_true', help="whether to add instruction for query")
     parser.add_argument('--pooling_method', default='cls', type=str)
     return parser.parse_args()
 

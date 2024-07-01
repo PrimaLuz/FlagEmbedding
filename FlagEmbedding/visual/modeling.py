@@ -31,6 +31,7 @@ class Visualized_BGE(nn.Module):
                  sentence_pooling_method: str = 'cls',
                  negatives_cross_device: bool = False,
                  temperature: float = 0.02, # 1.0
+                 from_pretrained=None, # local config file and model 
                  ):
         super().__init__()
 
@@ -47,9 +48,15 @@ class Visualized_BGE(nn.Module):
             model_name_eva = "EVA02-CLIP-L-14"
             self.hidden_dim = 1024
             self.depth = 24
-
-        bge_config = AutoConfig.from_pretrained(model_name_bge)
-        bge = AutoModel.from_config(bge_config)
+        
+        if not from_pretrained:
+            bge_config = AutoConfig.from_pretrained(model_name_bge)
+            bge = AutoModel.from_config(bge_config)
+        else:
+            print("Loading from local path.")
+            bge_config = AutoConfig.from_pretrained(from_pretrained, local_files_only=True)
+            bge = AutoModel.from_config(bge_config)
+        
         self.bge_encoder = bge.encoder
         self.bge_embeddings = bge.embeddings
         self.bge_pooler = bge.pooler
@@ -81,7 +88,14 @@ class Visualized_BGE(nn.Module):
         
         self.load_model(model_weight)
         
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name_bge,use_fast=False)
+        if not from_pretrained:
+            self.tokenizer = AutoTokenizer.from_pretrained(model_name_bge, use_fast=False)
+        else:
+            self.tokenizer = AutoTokenizer.from_pretrained(from_pretrained, use_fast=False)
+
+        if torch.cuda.is_available():
+            self.device = torch.device('cuda')
+            self.to(self.device)
     
     def load_model(self, model_weight):
         self.load_state_dict(torch.load(model_weight, map_location='cpu'))
@@ -96,15 +110,16 @@ class Visualized_BGE(nn.Module):
         # used for simple inference
         if image is not None:
             image = self.preprocess_val(Image.open(image)).unsqueeze(0)
+
             if text is not None:
                 text = self.tokenizer(text, return_tensors="pt", padding=True)
-                return self.encode_mm(image, text)
+                return self.encode_mm(image.to(self.device), text.to(self.device))
             else:
-                return self.encode_image(image)
+                return self.encode_image(image.to(self.device))
         else:
             if text is not None:
                 text = self.tokenizer(text, return_tensors="pt", padding=True)
-                return self.encode_text(text)
+                return self.encode_text(text.to(self.device))
             else:
                 return None
         
@@ -251,7 +266,7 @@ class Visualized_BGE(nn.Module):
         prom_img_input_shape = prompt_img_embedding.size()
 
         head_mask = [None] * self.depth
-        extended_attention_mask: torch.Tensor = self.get_extended_attention_mask(prom_img_attention_mask, prom_img_input_shape)
+        extended_attention_mask: torch.Tensor = self.get_extended_attention_mask(prom_img_attention_mask, prom_img_input_shape).to(prompt_img_embedding.dtype)
         
         
         encoder_outputs = self.bge_encoder(
@@ -293,7 +308,7 @@ class Visualized_BGE(nn.Module):
         prompts = [""] * batch_size
         
         prompts = self.tokenizer(prompts, return_tensors="pt", padding=True)        
-        
+        prompts = prompts.to(images.device)
         img_reps = self.encode_mm(images, prompts)
         return img_reps
     

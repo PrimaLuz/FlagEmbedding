@@ -10,7 +10,7 @@ def load_retrieval_data(hf_hub_name, eval_splits):
     dataset = load_dataset(hf_hub_name)
     qrels = load_dataset(hf_hub_name + "-qrels")[eval_split]
 
-    corpus = {e["id"]: {"text": e["text"]} for e in dataset["corpus"][0:1999]}
+    corpus = {e["id"]: {"text": e["text"]} for e in dataset["corpus"]}
     queries = {e["id"]: e["text"] for e in dataset["queries"]}
     relevant_docs = defaultdict(dict)
     for e in qrels:

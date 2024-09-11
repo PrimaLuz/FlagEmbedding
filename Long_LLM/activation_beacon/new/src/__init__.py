@@ -2,7 +2,7 @@ from .utils import FileLogger, DefaultDataCollator, makedirs, split_file_dir_nam
 from .chat import apply_chat_template
 from .args import ModelArgs
 from .data import Data
-from .modeling_utils import evaluate_perplexity, evaluate_generation, evaluate_nll, move_to_device
+from .modeling_utils import evaluate_perplexity, evaluate_generation, evaluate_nll, move_to_device, get_shifted_labels
 
 import logging
 logging.basicConfig(
@@ -12,8 +12,7 @@ logging.basicConfig(
 )
 
 
-def get_model_and_tokenizer(model_args, device="cpu", evaluation_mode=True, return_tokenizer_only=False, **kwargs):
-    """Load model and tokenizer."""
+def get_model_and_tokenizer(model_args, device="cpu", evaluation_mode=True, return_tokenizer_only=False, **kwargs):    
     import torch
     import transformers
     from dataclasses import asdict
@@ -98,8 +97,6 @@ def get_model_and_tokenizer(model_args, device="cpu", evaluation_mode=True, retu
     for k, v in model_args_dict.items():
         if k.startswith("beacon") and v is not None:
             beacon_kwargs[k] = v
-        elif k.startswith("retrieval") and v is not None:
-            beacon_kwargs[k] = v
 
     # use architecture attribute to distinguish different models
     probe_config = AutoConfig.from_pretrained(
@@ -127,9 +124,11 @@ def get_model_and_tokenizer(model_args, device="cpu", evaluation_mode=True, retu
     if model_args_dict["enable_beacon"]:
         from .llama import LlamaForCausalLM, LlamaConfig
         from .mistral import MistralForCausalLM, MistralConfig
+        from .qwen2 import Qwen2ForCausalLM, Qwen2Config
         ARCHITECTURE_TO_CLASS = {
             'LlamaForCausalLM': (LlamaConfig, LlamaForCausalLM),
             'MistralForCausalLM': (MistralConfig, MistralForCausalLM),
+            'Qwen2ForCausalLM': (Qwen2Config, Qwen2ForCausalLM),
         }
 
         config_class, model_class = ARCHITECTURE_TO_CLASS[architecture]
@@ -138,6 +137,8 @@ def get_model_and_tokenizer(model_args, device="cpu", evaluation_mode=True, retu
             model_name_or_path, 
             cache_dir=cache_dir,
             token=access_token,
+            # NOTE: keep the torch_dtype in config consistent with that in model
+            torch_dtype=dtype,
             **beacon_kwargs,
             **rope_kwargs,
             **attn_kwargs,
@@ -151,29 +152,47 @@ def get_model_and_tokenizer(model_args, device="cpu", evaluation_mode=True, retu
             device_map=device_map, 
             token=access_token,
         )
-    
-    # elif model_args_dict["enable_cpp"]:
-    #     from llama_cpp import Llama
-    #     llm = Llama(
-    #         model_path=model_name_or_path,  # path to GGUF file
-    #         n_ctx=args.max_length,
-    #         n_gpu_layers=args.cpp_gpu_layer,
-    #     )
 
     else:
-        model = AutoModelForCausalLM.from_pretrained(
-            model_name_or_path, 
-            cache_dir=cache_dir, 
-            torch_dtype=dtype,
-            device_map=device_map,
-            token=access_token,
-            trust_remote_code=True,
+        if model_args_dict["enable_vllm"]:
+            from .vllm_utils import HFStyleVllmModel
+            if model_args_dict["dtype"] == "fp32":
+                vllm_dtype = "float32"
+            elif model_args_dict["dtype"] == "fp16":
+                vllm_dtype = "float16"
+            elif model_args_dict["dtype"] == "bf16":
+                vllm_dtype = "bfloat16"
 
-            # NOTE: do not destroy the default rope_scaling of the model
-            **rope_kwargs,
-            **attn_kwargs,
-            **extra_kwargs,
-        )
+            vllm_kwargs = {}
+            if model_args_dict["vllm_len"] is not None:
+                vllm_kwargs["max_model_len"] = model_args_dict["vllm_len"]
+
+            model = HFStyleVllmModel(
+                model=model_name_or_path,
+                dtype=vllm_dtype,
+                gpu_memory_utilization=model_args_dict["vllm_mem"],
+                tensor_parallel_size=model_args_dict["vllm_tp"],
+                disable_custom_all_reduce=model_args_dict["vllm_disable_ar"],
+                enforce_eager=False,
+                trust_remote_code=True,
+                **rope_kwargs,
+                **vllm_kwargs,
+            )
+
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name_or_path, 
+                cache_dir=cache_dir, 
+                torch_dtype=dtype,
+                device_map=device_map,
+                token=access_token,
+                trust_remote_code=True,
+
+                # NOTE: do not destroy the default rope_scaling of the model
+                **rope_kwargs,
+                **attn_kwargs,
+                **extra_kwargs,
+            )
 
     # load lora
     if model_args_dict["lora"] is not None:
@@ -189,7 +208,6 @@ def get_model_and_tokenizer(model_args, device="cpu", evaluation_mode=True, retu
         if model_args_dict["lora_unload"]:
             model = model.merge_and_unload()
 
-
     if model_args_dict["enable_tp"]:
         import tensor_parallel as tp
         logger.info("enabling tensor parallelism...")
@@ -200,19 +218,17 @@ def get_model_and_tokenizer(model_args, device="cpu", evaluation_mode=True, retu
         if model.generation_config.eos_token_id == 128001:
             model.generation_config.eos_token_id = [128001, 128009]
 
-    model = model.eval()
-    logger.info(model.config)
-
-    if evaluation_mode:
-        # NOTE: essential to disable all gradient in-place, so that when calling accelerator.prepare, the forward function will not be wrapped that may consume extra GPU memory
-        model.requires_grad_(False)
+    if isinstance(model, transformers.modeling_utils.PreTrainedModel):
+        model = model.eval()
+        if evaluation_mode:
+            # NOTE: essential to disable all gradient in-place, so that when calling accelerator.prepare, the forward function will not be wrapped that may consume extra GPU memory
+            model.requires_grad_(False)
+        logger.info(model.config)
 
     # override the default generation config
     generation_config = model_args.get_generation_config()
     if len(generation_config):
-        unused_config = model.generation_config.update(**generation_config)
-        if len(unused_config):
-            logger.warning(f"The following attributes are not used when overriding the generation configurations: {unused_config}")
-    logger.info(f"Generation config: {generation_config}")
+        model.generation_config.update(**generation_config)
+    logger.info(f"Specified generation config: {generation_config}")
 
     return model, tokenizer

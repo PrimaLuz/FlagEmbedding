@@ -9,25 +9,36 @@
     </a>
     <a href="https://huggingface.co/BAAI/bge-visualized">
         <img alt="Build" src="https://img.shields.io/badge/🤗 Model-VISTA Model-yellow">
-    </a>
+</p>
+
+<p align="center">
+</a>
     <a href="https://huggingface.co/datasets/JUNJIE99/VISTA_S2">
-        <img alt="Build" src="https://img.shields.io/badge/🤗 Dataset-VISTA_S2 Dataset-yellow">
+        <img alt="Build" src="https://img.shields.io/badge/🤗 Dataset-VISTA S2 Training Dataset-yellow">
+    </a>
+    <a href="https://huggingface.co/datasets/JUNJIE99/VISTA_Evaluation">
+        <img alt="Build" src="https://img.shields.io/badge/🤗 Dataset-Zero_Shot Multimodal Retrieval Dataset-yellow">
     </a>
 </p>
 
 ## 🔔 News
-**[2024.3.18] We have released our code and model.**
+**[2024.8.27] The core code for the evaluation and fine-tuning of VISTA can be obtained from [this link](https://github.com/JUNJIE99/VISTA_Evaluation_FineTuning). This includes Stage2 training, downstream task fine-tuning, as well as the datasets we used for evaluation.**
+
+**[2024.6.13] We have released [VISTA-S2 dataset](https://huggingface.co/datasets/JUNJIE99/VISTA_S2), a hybrid multi-modal dataset consisting of over 500,000 instances for multi-modal training (Stage-2 training in our paper).**
 
 **[2024.6.7] We have released our paper. [Arxiv Link](https://arxiv.org/abs/2406.04292)**
 
-**[2024.6.13] We have released [VISTA-S2 dataset](https://huggingface.co/datasets/JUNJIE99/VISTA_S2), a hybrid multi-modal dataset consisting of over 500,000 instances for multi-modal training (Stage-2 training in our paper).**
+**[2024.3.18] We have released our code and model.**
+
+
+
 
 ## Introduction
 In this project, we introduce Visualized-BGE, a universal multi-modal embedding model. By incorporating image token embedding into the BGE Text Embedding framework, Visualized-BGE gains the flexibility to process multi-modal data that goes beyond just text. Visualized-BGE is mainly used for hybrid modal retrieval tasks, including but not limited to:
 
 - Multi-Modal Knowledge Retrieval (query: text; candidate: image-text pairs, text, or image)  e.g. [WebQA](https://github.com/WebQnA/WebQA)
-- Composed Image Retrieval (query: image-text pair; candidate: images) e.g. [CIRR](), [FashionIQ]()
-- Knowledge Retrieval with Multi-Modal Queries (query: image-text pair; candidate: texts) e.g. [ReMuQ]()
+- Composed Image Retrieval (query: image-text pair; candidate: images) e.g. [CIRR](https://github.com/Cuberick-Orion/CIRR), [FashionIQ](https://github.com/XiaoxiaoGuo/fashion-iq)
+- Knowledge Retrieval with Multi-Modal Queries (query: image-text pair; candidate: texts) e.g. [ReMuQ](https://github.com/luomancs/ReMuQ)
 
 Moreover, Visualized BGE fully preserves the strong text embedding capabilities of the original BGE model : )
 
@@ -127,6 +138,8 @@ sim_1 = query_emb @ candi_emb_1.T
 sim_2 = query_emb @ candi_emb_2.T
 print(sim_1, sim_2) # tensor([[0.7026]]) tensor([[0.8075]])
 ```
+## Downstream Application Cases
+- [Huixiangdou](https://github.com/InternLM/HuixiangDou): Using Visualized BGE for the group chat assistant.
 
 ## Evaluation Result
 Visualized BGE delivers outstanding zero-shot performance across multiple hybrid modal retrieval tasks. It can also serve as a base model for downstream fine-tuning for hybrid modal retrieval tasks.
@@ -144,6 +157,9 @@ Visualized BGE delivers outstanding zero-shot performance across multiple hybrid
 ![image.png](./imgs/SFT-CIRR.png)
 - Supervised fine-tuning performance on the ReMuQ test set.
 ![image.png](./imgs/SFT-ReMuQ.png)
+
+
+
 ## FAQ
 
 **Q1: Can Visualized BGE be used for cross-modal retrieval (text to image)?**

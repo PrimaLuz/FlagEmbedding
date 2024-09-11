@@ -1,24 +1,31 @@
 <h1 align="center">FlagEmbedding</h1>
 <p align="center">
-    <a href="https://www.python.org/">
-            <img alt="Build" src="https://img.shields.io/badge/Made with-Python-purple">
+    <a href="https://huggingface.co/collections/BAAI/bge-66797a74476eb1f085c7446d">
+        <img alt="Build" src="https://img.shields.io/badge/BGE_series-🤗-yellow">
+    </a>
+    <a href="https://github.com/FlagOpen/FlagEmbedding">
+            <img alt="Build" src="https://img.shields.io/badge/Contribution-Welcome-blue">
     </a>
     <a href="https://github.com/FlagOpen/FlagEmbedding/blob/master/LICENSE">
         <img alt="License" src="https://img.shields.io/badge/LICENSE-MIT-green">
     </a>
     <a href="https://huggingface.co/C-MTEB">
-        <img alt="License" src="https://img.shields.io/badge/C_MTEB-🤗-yellow">
+        <img alt="Build" src="https://img.shields.io/badge/C_MTEB-🤗-yellow">
     </a>
-    <a href="https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding">
-        <img alt="License" src="https://img.shields.io/badge/universal embedding-1.1-red">
+    <a href="https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/baai_general_embedding">
+        <img alt="Build" src="https://img.shields.io/badge/FlagEmbedding-1.1-red">
     </a>
 </p>
 
 <h4 align="center">
     <p>
         <a href=#更新>更新</a> |
+        <a href=#安装>安装</a> |
+        <a href=#快速开始>快速开始</a> |
+        <a href=#社区>社区</a> |
         <a href="#项目">项目</a> |
         <a href="#模型列表">模型列表</a> |
+        <a href=#贡献者>贡献者</a> |
         <a href="#citation">Citation</a> |
         <a href="#license">License</a> 
     <p>
@@ -36,7 +43,15 @@ FlagEmbedding专注于检索增强llm领域，目前包括以下项目:
 - **Benchmark**: [C-MTEB](https://github.com/FlagOpen/FlagEmbedding/tree/master/C_MTEB), [AIR-Bench](https://github.com/AIR-Bench/AIR-Bench), [MLVU](https://github.com/JUNJIE99/MLVU)
 
 ## 更新
-- 6/7/2024: 发布首个专为长视频理解设计的全面评测基准[MLVU](https://github.com/JUNJIE99/MLVU)。MLVU拥有丰富的视频时长范围，多样化的视频来源，以及多个专为长视频理解设计的评估任务。🔥
+- 9/2/2024: 开始维护更新[教程](./Tutorials/)，教程文件夹中的内容会在未来不断丰富，欢迎持续关注！ :books:
+- 7/26/2024：发布[bge-en-icl](https://huggingface.co/BAAI/bge-en-icl)。这是一个结合了上下文学习能力的文本检索模型，通过提供与任务相关的查询-回答示例，可以编码语义更丰富的查询，进一步增强嵌入的语义表征能力。 :fire:
+- 7/26/2024: 发布[bge-multilingual-gemma2](https://huggingface.co/BAAI/bge-multilingual-gemma2)。这是一个基于gemma-2-9b的多语言文本向量模型，同时支持多种语言和多样的下游任务，在多语言检索数据集 MIRACL, MTEB-fr, MTEB-pl 上取得了迄今最好的实验结果。 :fire:
+- 7/26/2024：发布新的轻量级重排器[bge-reranker-v2.5-gemma2-lightweight](https://huggingface.co/BAAI/bge-reranker-v2.5-gemma2-lightweight)。这是一个基于gemma-2-9b的轻量级重排器，支持令牌压缩和分层轻量操作，在节省大量资源的同时，仍能确保良好的性能。:fire:
+
+<details>
+  <summary>More</summary>
+
+- 6/7/2024: 发布首个专为长视频理解设计的全面评测基准[MLVU](https://github.com/JUNJIE99/MLVU)。MLVU拥有丰富的视频时长范围，多样化的视频来源，以及多个专为长视频理解设计的评估任务。 :fire:
 - 5/21/2024：联合 Jina AI、Zilliz、HuggingFace 等机构发布评测基准 [AIR-Bench](https://github.com/AIR-Bench/AIR-Bench)，针对检索任务和 RAG 场景设计。AIR-Bench 首次提出在检索任务中使用 LLMs 自动化生产评估数据，避免模型过拟合测试数据。AIR-Bench 不需要人工参与标注数据，因而可以更灵活覆盖更多垂直领域和不同语种。同时 AIR-Bench 会定期进行更新从而满足社区不断变化的评测需求。[Leaderboard](https://huggingface.co/spaces/AIR-Bench/leaderboard) :fire:
 - 4/30/2024: 发布[Llama-3-8B-Instruct-80K-QLoRA](https://huggingface.co/namespace-Pt/Llama-3-8B-Instruct-80K-QLoRA), 其通过在少量合成的长文本数据上的QLoRA训练，有效地将Llama-3-8B-Instruct的上下文长度从8K扩展到80K。详见[代码](https://github.com/FlagOpen/FlagEmbedding/tree/master/Long_LLM/longllm_qlora) :fire:
 - 3/18/2024: 发布新的[rerankers](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/llm_reranker), 拥有更好的性能同时支持多语言和长文本。 :fire:
@@ -56,8 +71,64 @@ FlagEmbedding专注于检索增强llm领域，目前包括以下项目:
 - 08/02/2023: :tada: :tada: 发布中英文向量模型BGE(BAAI General Embedding的缩写), **在MTEB和C-MTEB榜单上取得最好的性能** 
 - 08/01/2023: 发布大规模中文文本向量[评测榜单](https://github.com/FlagOpen/FlagEmbedding/blob/master/C_MTEB) (**C-MTEB**), 其包括31个测试任务.   
 
+</details>
 
 
+## 安装
+### 使用pip:
+```
+pip install -U FlagEmbedding
+```
+### 从源文件安装部署:
+
+克隆并安装FlagEmbedding：
+```
+git clone https://github.com/FlagOpen/FlagEmbedding.git
+cd FlagEmbedding
+pip install  .
+```
+在可编辑模式下安装:
+```
+pip install -e .
+```
+
+## 快速开始
+首先，加载一个BGE向量模型：
+```
+from FlagEmbedding import FlagModel
+
+model = FlagModel('BAAI/bge-base-en-v1.5',
+                  query_instruction_for_retrieval="Represent this sentence for searching relevant passages:",
+                  use_fp16=True)
+```
+将语句作为模型输入，得到向量：
+```
+sentences_1 = ["I love NLP", "I love machine learning"]
+sentences_2 = ["I love BGE", "I love text retrieval"]
+embeddings_1 = model.encode(sentences_1)
+embeddings_2 = model.encode(sentences_2)
+```
+取得向量后，通过内积计算相似度：
+```
+similarity = embeddings_1 @ embeddings_2.T
+print(similarity)
+```
+
+## 社区
+
+我们将持续维护BGE及FlagEmbedding社区，有任何想法建议都欢迎告诉我们！
+
+近期会持续更新[教学](./Tutorials/)中的内容，希望为文本检索以及RAG打造出完整且详细的教学，欢迎持续关注！
+
+在未来两周左右将会更新以下内容：
+
+- BGE模型介绍
+- 在MTEB的任务中的评测
+
+<details>
+  <summary>教程规划</summary>
+    <img src="./Tutorials/tutorial_map.png"/>
+</details>
 
 
 ## 项目
@@ -140,9 +211,15 @@ BGE Embedding是一个通用向量模型。 我们使用[retromae](https://githu
 ## 模型列表
 | Model                                                                     |      Language       | |              Description               | query instruction for retrieval [1] |
 |:--------------------------------------------------------------------------|:-------------------:| :--------:|:--------------------------------------:|:--------:|
+| [BAAI/bge-en-icl](https://huggingface.co/BAAI/bge-en-icl) | English | | 基于大型语言模型的向量模型，具有上下文学习能力，能够基于少量示例充分发挥模型的潜力。 |            根据给定的任务自由提供指示和少数示例。            |
+| [BAAI/bge-multilingual-gemma2](https://huggingface.co/BAAI/bge-multilingual-gemma2) | Multilingual | | 基于大型语言模型的多语言向量模型，在多种语言和任务上训练，适应多样化的下游场景。 |            根据给定的任务自由提供指示和少数示例。            |
 | [BAAI/bge-m3](https://huggingface.co/BAAI/bge-m3)                   |    Multilingual     | [推理](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/BGE_M3#usage) [微调](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/BGE_M3) | 多功能（向量检索，稀疏检索，多表征检索）、多语言、多粒度（最大长度8192） |  |
 | [LM-Cocktail](https://huggingface.co/Shitao)                              |       English       |  | 微调的Llama和BGE模型，可以用来复现LM-Cocktail论文的结果  |  |
 | [BAAI/llm-embedder](https://huggingface.co/BAAI/llm-embedder)             |       English       | [推理](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/llm_embedder) [微调](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/llm_embedder) |         专为大语言模型各种检索增强任务设计的向量模型         | 详见 [README](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/llm_embedder) |
+| [BAAI/bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) |    Multilingual     | [推理](#usage-for-reranker) [微调](https://github.com/FlagOpen/FlagEmbedding/tree/master/examples/reranker) | 一个轻量级的交叉编码器模型，具有强大的多语言能力，易于部署，具有快速的推理能力。 |                                                              |
+| [BAAI/bge-reranker-v2-gemma](https://huggingface.co/BAAI/bge-reranker-v2-gemma) |    Multilingual     | [推理](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/llm_reranker) [微调](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/llm_reranker) | 一个支持多语言的交叉编码器模型，在英文和多语言能力方面均表现出色。 |                                                              |
+| [BAAI/bge-reranker-v2-minicpm-layerwise](https://huggingface.co/BAAI/bge-reranker-v2-minicpm-layerwise) |    Multilingual     | [推理](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/llm_reranker) [微调](https://github.com/FlagOpen/FlagEmbedding/tree/master/FlagEmbedding/llm_reranker) | 一个支持多语言的交叉编码器模型，在英文和中文方面均表现良好，允许自由选择输出层，以便加速推理。 |                                                              |
+| [BAAI/bge-reranker-v2.5-gemma2-lightweight](https://huggingface.co/BAAI/bge-reranker-v2.5-gemma2-lightweight) |    Multilingual     |      [推理](BAAI/bge-reranker-v2.5-gemma2-lightweight)       | 一个支持多语言的跨编码器模型，不仅在英文和中文上表现良好，还允许自由选择输出层、压缩比例和压缩层，从而便于加速推理。 |  |
 | [BAAI/bge-reranker-large](https://huggingface.co/BAAI/bge-reranker-large) | Chinese and English | [推理](#usage-for-reranker) [微调](https://github.com/FlagOpen/FlagEmbedding/tree/master/examples/reranker) |      交叉编码器模型，精度比向量模型更高但推理效率较低 [2]      |   |
 | [BAAI/bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base)   | Chinese and English | [推理](#usage-for-reranker) [微调](https://github.com/FlagOpen/FlagEmbedding/tree/master/examples/reranker) |      交叉编码器模型，精度比向量模型更高但推理效率较低 [2]      |   |
 | [BAAI/bge-large-en-v1.5](https://huggingface.co/BAAI/bge-large-en-v1.5)   |       English       | [推理](#usage-for-embedding-model) [微调](https://github.com/FlagOpen/FlagEmbedding/tree/master/examples/finetune) |            1.5版本，相似度分布更加合理             | `Represent this sentence for searching relevant passages: `  |
@@ -161,7 +238,9 @@ BGE Embedding是一个通用向量模型。 我们使用[retromae](https://githu
 
 
 
-## Contributors:
+## 贡献者:
+
+十分感谢所有参与FlagEmbedding社区成员的贡献，也欢迎新的成员加入！
 
 <a href="https://github.com/FlagOpen/FlagEmbedding/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=FlagOpen/FlagEmbedding" />
